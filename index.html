@@ -1,1 +1,33 @@
-
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teste Vilela</title>
+<style>body{font-family:Arial,sans-serif;max-width:640px;margin:30px auto;padding:0 16px}input,button{width:100%;padding:12px;margin:6px 0;font-size:16px;box-sizing:border-box}button{background:#111;color:#fff;border:0;cursor:pointer}p{word-break:break-all}.ok{color:#0a7d2c;font-weight:bold}.er{color:#b00020;font-weight:bold}</style>
+<script src="config.js"></script></head><body>
+<h2>Teste de conexão - Vilela</h2>
+<input id="em" value="ricardocontreras102030@gmail.com">
+<input id="pw" type="password" placeholder="Senha">
+<button onclick="t()">TESTAR</button>
+<div id="out"></div>
+<script>
+const o=document.getElementById('out');
+function esc(s){return String(s).replace(/</g,'&lt;')}
+function L(t,c){o.insertAdjacentHTML('beforeend','<p class="'+(c||'')+'">'+esc(t)+'</p>')}
+async function t(){
+ o.innerHTML='';
+ const c=window.VILELA_SB;
+ if(!c||!c.url||!c.key){L('1) config.js VAZIO ou nao carregou. O site fica em modo local.','er');return}
+ L('1) config.js lido. URL: '+c.url);
+ L('Chave comeca com: '+c.key.slice(0,18)+' (tamanho '+c.key.length+')');
+ if(c.key.indexOf('sb_publishable_')!==0&&c.key.indexOf('eyJ')!==0)L('A chave NAO parece uma chave publishable. Troque no config.js.','er');
+ try{
+  const r=await fetch(c.url+'/rest/v1/produtos?select=id&limit=1',{headers:{apikey:c.key}});
+  const x=await r.text();
+  L('2) Teste da chave: HTTP '+r.status+' '+x.slice(0,200),r.ok?'ok':'er');
+ }catch(e){L('2) Nao conectou ao Supabase: '+e.message+' (URL errada?)','er');return}
+ try{
+  const r=await fetch(c.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('em').value.trim(),password:document.getElementById('pw').value})});
+  const x=await r.text();
+  L('3) Login: HTTP '+r.status+' '+(r.ok?'LOGIN OK':x.slice(0,300)),r.ok?'ok':'er');
+ }catch(e){L('3) Erro no login: '+e.message,'er')}
+}
+</script></body></html>
